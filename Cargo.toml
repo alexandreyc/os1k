@@ -1,0 +1,7 @@
+[package]
+name = "os1k"
+version = "0.1.0"
+edition = "2024"
+authors = ["Alexandre Crayssac"]
+license = "MIT"
+
