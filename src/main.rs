@@ -4,6 +4,9 @@
 use core::arch::naked_asm;
 use core::panic::PanicInfo;
 
+mod kprint;
+mod sbi;
+
 // Declare symbols defined in the linker script.
 unsafe extern "C" {
     static mut __bss_start: u8;
@@ -34,7 +37,14 @@ fn kernel_main() -> ! {
         core::ptr::write_bytes(bss_start, 0, bss_len);
     }
 
-    loop {}
+    kprint!("hello world!\n");
+    kprint!("a = {}, b = {:?}\n", 42, core::f64::consts::PI);
+
+    loop {
+        unsafe {
+            core::arch::asm!("wfi");
+        }
+    }
 }
 
 #[panic_handler]
