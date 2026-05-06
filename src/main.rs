@@ -38,7 +38,8 @@ fn kernel_main() -> ! {
     }
 
     kprint!("hello world!\n");
-    kprint!("a = {}, b = {:?}\n", 42, core::f64::consts::PI);
+    panic!("ooops");
+    kprint!("unreachable\n");
 
     loop {
         unsafe {
@@ -48,6 +49,12 @@ fn kernel_main() -> ! {
 }
 
 #[panic_handler]
-fn panic_handler(_: &PanicInfo) -> ! {
+fn kernel_panic(pi: &PanicInfo) -> ! {
+    if let Some(loc) = pi.location() {
+        kprint!("PANIC: {}:{}: {}\n", loc.file(), loc.line(), pi.message());
+    } else {
+        kprint!("PANIC: {}\n", pi.message());
+    }
+
     loop {}
 }
