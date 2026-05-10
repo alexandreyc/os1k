@@ -6,6 +6,7 @@ use core::panic::PanicInfo;
 
 mod kprint;
 mod sbi;
+mod trap;
 
 // Declare symbols defined in the linker script.
 unsafe extern "C" {
@@ -19,7 +20,7 @@ unsafe extern "C" {
 #[unsafe(naked)]
 extern "C" fn boot() -> ! {
     naked_asm!(
-        "la sp, {sp}",
+        "la sp, {sp}", // Setup the kernel stack.
         "j {main}",
         sp = sym __stack_top,
         main = sym kernel_main,
@@ -37,10 +38,14 @@ fn kernel_main() -> ! {
         core::ptr::write_bytes(bss_start, 0, bss_len);
     }
 
-    kprint!("hello world!\n");
-    panic!("ooops");
-    kprint!("unreachable\n");
+    // Register the trap handler.
+    write_csr!("stvec", trap::handler as *const () as usize);
 
+    kprint!("hello world!\n");
+
+    unsafe {
+        core::arch::asm!("unimp");
+    }
     loop {
         unsafe {
             core::arch::asm!("wfi");
